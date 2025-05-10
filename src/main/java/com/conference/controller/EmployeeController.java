@@ -1,6 +1,7 @@
 package com.conference.controller;
 
 import com.conference.entity.Employee;
+import com.conference.entity.EmployeeTokenResponse;
 import com.conference.utils.Status;
 import com.conference.service.EmployeeService;
 import com.conference.utils.JwtUtil;
@@ -144,10 +145,21 @@ public class EmployeeController {
      *  }
      */
     @GetMapping("employeeDetailById")
-    public Result employeeDetailById(Integer employeeId){
+    public Result<EmployeeTokenResponse> employeeDetailById(Integer employeeId){
         Employee employee = employeeService.findByEmployeeId(employeeId);
-        return Result.success(employee);
+        if (employee == null) {
+            return Result.error("员工不存在");
+        }
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("id", employee.getEmployeeId());
+        claims.put("username", employee.getUsername());
+        String token = JwtUtil.genToken(claims);
+
+        EmployeeTokenResponse response = new EmployeeTokenResponse(token, employee);
+        return Result.success(response);
     }
+
 
     /** 根据员工用户名查询员工信息
      *  url地址：employee/employeeDetailByUsername
@@ -264,6 +276,7 @@ public class EmployeeController {
                 // 若审核不通过，则对员工所修改的账户进行回档
                 employee.setStatus(Status.NORMAL_USING); // 进行回档 - username保持为修改前，状态重置为正常使用
                 employee.setCheckUsername(null);    // 将checkUsername字段重置为null，表示该用户名审核不通过
+
                 // 这里就需要前端告知员工，管理员拒绝了其对username的修改申请
             }else{
                 // 若审核通过，status会在employee中携带，则无需自行赋值
