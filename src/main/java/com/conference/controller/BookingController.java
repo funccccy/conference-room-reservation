@@ -64,7 +64,7 @@ public class BookingController {
     }
 
     /**
-     * 查询客户所有预订记录（员工端）
+     * 通过日期查询客户所有预订记录（员工端）
      * url地址：booking/list
      * 请求方式：GET
      * 请求参数：
@@ -89,11 +89,21 @@ public class BookingController {
      *     ]
      * }
      */
-    @GetMapping("list_forEmployee")
-    public Result<List<Booking>> listBookingsforEmployee(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate bookingDate,
+    @GetMapping("listBycondition")
+    public Result<List<Booking>> listBycondition(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate bookingDate,
                                                          @RequestParam Integer startHour,
                                                          @RequestParam Integer endHour) {
-        Result result = bookingService.listByCustomerIdforemployee(bookingDate, startHour, endHour);
+        Result result = bookingService.listByConditionforemployee(bookingDate, startHour, endHour);
+        return result;
+    }
+
+
+    /**
+     * 查询客户所有预订记录（员工端）
+     */
+    @GetMapping("listForEmployee")
+    public Result<List<Booking>> listBookingsForEmployee() {
+        Result result = bookingService.listBookingsForEmployee();
         return result;
     }
 
@@ -280,5 +290,22 @@ public class BookingController {
         Result result = meetingRoomService.updateRoomStatus(roomId, statusName);
         return result;
     }
+
+
+    /**
+     * 更新预订状态（员工端使用）
+     */
+    @PutMapping("updateBooking")
+    public Result updateBooking(@RequestBody Booking booking) {
+        if (booking.getBookingId() == null) {
+            return Result.error("预订ID不能为空");
+        }
+
+        // 更新预订状态
+        Result result = bookingService.updateBookingStatus(booking);
+        return result;
+    }
+
+
 
 }

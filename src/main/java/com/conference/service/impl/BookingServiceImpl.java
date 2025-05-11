@@ -171,9 +171,33 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Result<List<Booking>> listByCustomerIdforemployee(LocalDate bookingDate, Integer startHour, Integer endHour) {
+    public Result<List<Booking>> listByConditionforemployee(LocalDate bookingDate, Integer startHour, Integer endHour) {
         List<Booking> bookings = bookingMapper.selectbyConditions(bookingDate, startHour, endHour);
         System.out.println(bookings);
+        return Result.success(bookings);
+    }
+
+    @Override
+    public Result updateBookingStatus(Booking booking) {
+
+        // 1. 检查预订记录是否存在
+        Booking existingBooking = bookingMapper.selectById(booking.getBookingId());
+        if (existingBooking == null) {
+            return Result.error("预订记录不存在");
+        }
+        // 2. 更新预订状态
+        int updated = bookingMapper.updateBookingStatus(booking);
+        if (updated <= 0) {
+            return Result.error("更新预订状态失败");
+        }
+
+        return Result.success("更新预订状态成功");
+    }
+
+    @Override
+    public Result<List<Booking>> listBookingsForEmployee() {
+        // 1. 查询所有预订记录
+        List<Booking> bookings = bookingMapper.selectAllBookings(); // null表示查询所有客户的预订记录
         return Result.success(bookings);
     }
 
